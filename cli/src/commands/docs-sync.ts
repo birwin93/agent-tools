@@ -1,0 +1,45 @@
+import { resolve } from "path";
+import { ApiClient } from "../generated/api-client";
+import { resolveConfig } from "../config";
+import { ensureDir, writeTextFile } from "../fs-utils";
+import { stringifyMarkdown } from "../frontmatter";
+
+export type DocsSyncOptions = {
+  baseUrl?: string;
+  docsDir?: string;
+  json?: boolean;
+};
+
+export async function docsSyncCommand(options: DocsSyncOptions) {
+  const config = await resolveConfig({ baseUrl: options.baseUrl, docsDir: options.docsDir });
+  const client = new ApiClient({ baseUrl: config.baseUrl });
+
+  const list = await client.listDocs();
+  await ensureDir(config.docsDir);
+
+  const results: { id: string; slug: string; path: string }[] = [];
+
+  for (const doc of list.docs) {
+    const detail = await client.getDocById(doc.id);
+    const frontmatter = {
+      id: detail.id,
+      slug: detail.slug,
+      title: detail.frontmatter.title,
+      summary: detail.frontmatter.summary,
+      version: detail.version,
+      updatedAt: detail.updatedAt,
+    };
+    const markdown = stringifyMarkdown(frontmatter, `\n${detail.content}\n`);
+    const filePath = resolve(config.docsDir, `${detail.slug}.md`);
+    await writeTextFile(filePath, markdown);
+    results.push({ id: detail.id, slug: detail.slug, path: filePath });
+  }
+
+  if (options.json) {
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify({ syncedCount: results.length, docsDir: config.docsDir, docs: results }, null, 2));
+  } else {
+    // eslint-disable-next-line no-console
+    console.log(`Synced ${results.length} docs into ${config.docsDir}`);
+  }
+}
