@@ -1,5 +1,5 @@
 import { resolve, isAbsolute } from "path";
-import { ApiClient } from "../generated/api-client";
+import { ApiClient, type DocsPushApiClient } from "../api-client";
 import { resolveConfig } from "../config";
 import { parseMarkdownFile, stringifyMarkdown } from "../frontmatter";
 import { readTextFile, writeTextFile } from "../fs-utils";
@@ -8,6 +8,7 @@ export type DocsPushOptions = {
   baseUrl?: string;
   docsDir?: string;
   dryRun?: boolean;
+  apiClient?: DocsPushApiClient;
 };
 
 export async function docsPushCommand(filePath: string, options: DocsPushOptions) {
@@ -15,7 +16,7 @@ export async function docsPushCommand(filePath: string, options: DocsPushOptions
   const fullPath = isAbsolute(filePath) ? filePath : resolve(config.docsDir, filePath);
   const fileContent = await readTextFile(fullPath);
   const parsed = parseMarkdownFile(fileContent);
-  const client = new ApiClient({ baseUrl: config.baseUrl });
+  const client = options.apiClient ?? new ApiClient({ baseUrl: config.baseUrl });
 
   const id = parsed.frontmatter.id as string | undefined;
   const title = parsed.frontmatter.title as string | undefined;
