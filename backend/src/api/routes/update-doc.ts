@@ -32,7 +32,7 @@ export const updateDocRoute = createRoute({
     }
 
     try {
-      const updated = await service.updateDoc(params.id, body);
+      const updated = await service.updateDoc(params!.id, body!);
       return c.json(updated);
     } catch (err) {
       if (err instanceof DocNotFoundError) {

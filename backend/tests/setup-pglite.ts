@@ -4,7 +4,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { buildApp } from "../src/index";
 import * as schema from "../src/db/schema";
 
-type ClosableApp = {
+type ClosableApp = ReturnType<typeof buildApp> & {
   close?: () => Promise<void>;
 };
 

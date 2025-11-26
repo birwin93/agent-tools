@@ -9,8 +9,17 @@ import { healthRoute } from "./health";
 import { listDocsRoute } from "./list-docs";
 import { updateDocRoute } from "./update-doc";
 
-const routes = [healthRoute, listDocsRoute, getDocByIdRoute, getDocBySlugRoute, createDocRoute, updateDocRoute];
+export const routes = {
+  health: healthRoute,
+  listDocs: listDocsRoute,
+  getDocById: getDocByIdRoute,
+  getDocBySlug: getDocBySlugRoute,
+  createDoc: createDocRoute,
+  updateDoc: updateDocRoute,
+};
+
+const routeList = Object.values(routes);
 
 export function registerRoutes(api: Hono, service: DocsService) {
-  attachRoutes(api, service, routes);
+  attachRoutes(api, service, routeList);
 }

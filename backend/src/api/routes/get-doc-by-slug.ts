@@ -18,7 +18,7 @@ export const getDocBySlugRoute = createRoute({
     },
   },
   handler: async ({ params, service, c }) => {
-    const doc = await service.getDocBySlug(params.slug);
+    const doc = await service.getDocBySlug(params!.slug);
     if (!doc) {
       return c.json({ error: "not_found", message: "Doc not found" } satisfies typeof ApiErrorSchema._type, 404);
     }
