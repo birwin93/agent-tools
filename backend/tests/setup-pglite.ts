@@ -4,6 +4,10 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { buildApp } from "../src/index";
 import * as schema from "../src/db/schema";
 
+type ClosableApp = {
+  close?: () => Promise<void>;
+};
+
 export async function createTestContext() {
   const client = new PGlite();
   await client.query(`
@@ -32,14 +36,16 @@ export async function createTestContext() {
   `);
 
   const db = drizzle(client, { schema }) as unknown as PostgresJsDatabase<typeof schema>;
-  const app = buildApp(db);
+  const app = buildApp(db) as ClosableApp;
 
   return {
     db,
     app,
     client,
     async close() {
-      await app.close();
+      if (typeof app.close === "function") {
+        await app.close();
+      }
       await client.close();
     },
   };
