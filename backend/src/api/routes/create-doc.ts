@@ -23,7 +23,7 @@ export const createDocRoute = createRoute({
   },
   handler: async ({ body, service, c }) => {
     try {
-      const created = await service.createDoc(body);
+      const created = await service.createDoc(body!);
       return c.json(created, 201);
     } catch (err) {
       if (err instanceof SlugConflictError) {
