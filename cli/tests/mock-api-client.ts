@@ -1,0 +1,49 @@
+import type { DocsPushApiClient, DocsSyncApiClient } from "../src/api-client";
+import type { CreateDocRequest, DocFrontmatter, DocWithContent } from "../src/generated/api-client";
+
+type CreateDocCall = { body: CreateDocRequest };
+type UpdateDocCall = { id: string; body: { title?: string; summary?: string; content?: string } };
+
+type MockResponse<T> = T | (() => T);
+
+export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient {
+  listDocsResponse: MockResponse<{ docs: DocFrontmatter[] }> = { docs: [] };
+  getDocResponse: MockResponse<DocWithContent> = {
+    id: "doc-1",
+    slug: "doc-1",
+    version: 1,
+    updatedAt: new Date().toISOString(),
+    frontmatter: { title: "Doc", summary: "Summary" },
+    content: "Content",
+  };
+  createResponses: MockResponse<DocWithContent>[] = [];
+  updateResponses: MockResponse<DocWithContent>[] = [];
+  createCalls: CreateDocCall[] = [];
+  updateCalls: UpdateDocCall[] = [];
+
+  async listDocs() {
+    return typeof this.listDocsResponse === "function"
+      ? (this.listDocsResponse as () => { docs: DocFrontmatter[] })()
+      : this.listDocsResponse;
+  }
+
+  async getDocById(id: string) {
+    const base = typeof this.getDocResponse === "function" ? this.getDocResponse() : this.getDocResponse;
+    return { ...base, id };
+  }
+
+  async createDoc(body: CreateDocRequest) {
+    this.createCalls.push({ body });
+    const next = this.createResponses.shift();
+    if (!next) throw new Error("No create response configured");
+    return typeof next === "function" ? (next as () => DocWithContent)() : next;
+  }
+
+  async updateDoc(id: string, body: { title?: string; summary?: string; content?: string }) {
+    this.updateCalls.push({ id, body });
+    const next = this.updateResponses.shift();
+    if (!next) throw new Error("No update response configured");
+    const response = typeof next === "function" ? (next as () => DocWithContent)() : next;
+    return { ...response, id } satisfies DocWithContent;
+  }
+}

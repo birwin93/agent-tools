@@ -1,5 +1,5 @@
 import { resolve } from "path";
-import { ApiClient } from "../generated/api-client";
+import { ApiClient, type DocsSyncApiClient } from "../api-client";
 import { resolveConfig } from "../config";
 import { ensureDir, writeTextFile } from "../fs-utils";
 import { stringifyMarkdown } from "../frontmatter";
@@ -8,11 +8,12 @@ export type DocsSyncOptions = {
   baseUrl?: string;
   docsDir?: string;
   json?: boolean;
+  apiClient?: DocsSyncApiClient;
 };
 
 export async function docsSyncCommand(options: DocsSyncOptions) {
   const config = await resolveConfig({ baseUrl: options.baseUrl, docsDir: options.docsDir });
-  const client = new ApiClient({ baseUrl: config.baseUrl });
+  const client = options.apiClient ?? new ApiClient({ baseUrl: config.baseUrl });
 
   const list = await client.listDocs();
   await ensureDir(config.docsDir);
