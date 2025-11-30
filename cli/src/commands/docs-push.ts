@@ -1,13 +1,14 @@
 import { resolve, isAbsolute } from "path";
 import { ApiClient, type DocsPushApiClient } from "../api-client";
+import type { CreateDocRequest, UpdateDocRequest } from "../generated/api-client";
 import { resolveConfig } from "../config";
 import { parseMarkdownFile, stringifyMarkdown } from "../frontmatter";
 import { readTextFile, writeTextFile } from "../fs-utils";
 
 export type DocsPushOptions = {
-  baseUrl?: string;
-  docsDir?: string;
-  dryRun?: boolean;
+  baseUrl?: string | undefined;
+  docsDir?: string | undefined;
+  dryRun?: boolean | undefined;
   apiClient?: DocsPushApiClient;
 };
 
@@ -27,9 +28,13 @@ export async function docsPushCommand(filePath: string, options: DocsPushOptions
     if (!title || !summary) {
       throw new Error("title and summary are required for new docs");
     }
-    const payload = { slug, title, summary, content: parsed.content };
+    const payload: CreateDocRequest = {
+      ...(slug ? { slug } : {}),
+      title,
+      summary,
+      content: parsed.content,
+    };
     if (options.dryRun) {
-      // eslint-disable-next-line no-console
       console.log(`[dry-run] Would create doc at ${config.baseUrl}/api/v1/docs with payload`, payload);
       return;
     }
@@ -45,19 +50,17 @@ export async function docsPushCommand(filePath: string, options: DocsPushOptions
     };
     const output = stringifyMarkdown(nextFrontmatter, `\n${created.content}\n`);
     await writeTextFile(fullPath, output);
-    // eslint-disable-next-line no-console
     console.log(`Pushed doc: id=${created.id}, slug=${created.slug}, version=${created.version}`);
     return;
   }
 
-  const updatePayload = {
-    title: title ?? undefined,
-    summary: summary ?? undefined,
+  const updatePayload: UpdateDocRequest = {
+    ...(title ? { title } : {}),
+    ...(summary ? { summary } : {}),
     content: parsed.content,
   };
 
   if (options.dryRun) {
-    // eslint-disable-next-line no-console
     console.log(`[dry-run] Would update doc ${id} at ${config.baseUrl}/api/v1/docs/${id} with payload`, updatePayload);
     return;
   }
@@ -74,6 +77,5 @@ export async function docsPushCommand(filePath: string, options: DocsPushOptions
   };
   const output = stringifyMarkdown(nextFrontmatter, `\n${updated.content}\n`);
   await writeTextFile(fullPath, output);
-  // eslint-disable-next-line no-console
   console.log(`Pushed doc: id=${id}, slug=${updated.slug}, version=${updated.version}`);
 }

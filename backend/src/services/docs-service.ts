@@ -19,7 +19,7 @@ function toIsoString(value: unknown): string {
 }
 
 async function generateUniqueSlug(db: Database, desired: string): Promise<string> {
-  let base = desired || "doc";
+  const base = desired || "doc";
   let candidate = base;
   let counter = 1;
   while (true) {
@@ -64,6 +64,11 @@ export type UpdateDocInput = {
   content?: string;
 };
 
+type DocWithVersionRow = {
+  doc: typeof docs.$inferSelect;
+  version: typeof docVersions.$inferSelect | null;
+};
+
 export class DocsService {
   constructor(private db: Database) {}
 
@@ -92,7 +97,7 @@ export class DocsService {
   }
 
   async getDocById(id: string): Promise<DocWithContent | null> {
-    const row = await this.db
+    const row: DocWithVersionRow[] = await this.db
       .select({
         doc: docs,
         version: docVersions,
@@ -102,13 +107,15 @@ export class DocsService {
       .where(eq(docs.id, id))
       .limit(1);
 
-    if (row.length === 0 || !row[0].version) return null;
+    const record = row[0];
 
-    return this.mapDocWithContent(row[0].doc, row[0].version);
+    if (!record?.version) return null;
+
+    return this.mapDocWithContent(record.doc, record.version);
   }
 
   async getDocBySlug(slug: string): Promise<DocWithContent | null> {
-    const row = await this.db
+    const row: DocWithVersionRow[] = await this.db
       .select({
         doc: docs,
         version: docVersions,
@@ -118,8 +125,10 @@ export class DocsService {
       .where(eq(docs.slug, slug))
       .limit(1);
 
-    if (row.length === 0 || !row[0].version) return null;
-    return this.mapDocWithContent(row[0].doc, row[0].version);
+    const record = row[0];
+
+    if (!record?.version) return null;
+    return this.mapDocWithContent(record.doc, record.version);
   }
 
   async createDoc(input: CreateDocInput): Promise<DocWithContent> {
@@ -146,6 +155,8 @@ export class DocsService {
         })
         .returning();
 
+      if (!docRow) throw new Error("Failed to insert doc");
+
       const [versionRow] = await tx
         .insert(docVersions)
         .values({
@@ -158,7 +169,12 @@ export class DocsService {
         })
         .returning();
 
-      await tx.update(docs).set({ currentVersionId: versionRow.id, updatedAt: now as unknown as Date }).where(eq(docs.id, docRow.id));
+      if (!versionRow) throw new Error("Failed to insert doc version");
+
+      await tx
+        .update(docs)
+        .set({ currentVersionId: versionRow.id, updatedAt: now as unknown as Date })
+        .where(eq(docs.id, docRow.id));
 
       return {
         id: docRow.id,
@@ -175,18 +191,20 @@ export class DocsService {
   }
 
   async updateDoc(id: string, input: UpdateDocInput): Promise<DocWithContent> {
-    const current = await this.db
+    const current: DocWithVersionRow[] = await this.db
       .select({ doc: docs, version: docVersions })
       .from(docs)
       .leftJoin(docVersions, eq(docVersions.id, docs.currentVersionId))
       .where(eq(docs.id, id))
       .limit(1);
 
-    if (current.length === 0 || !current[0].version) {
+    const record = current[0];
+
+    if (!record || !record.version) {
       throw new DocNotFoundError("Doc not found");
     }
 
-    const { doc, version } = current[0];
+    const { doc, version } = record;
     const nextTitle = input.title ?? version.title;
     const nextSummary = input.summary ?? version.summary;
     const nextContent = input.content ?? version.content;
@@ -205,6 +223,8 @@ export class DocsService {
         })
         .returning();
 
+      if (!newVersion) throw new Error("Failed to insert doc version");
+
       const [updatedDoc] = await tx
         .update(docs)
         .set({
@@ -215,6 +235,8 @@ export class DocsService {
         })
         .where(eq(docs.id, doc.id))
         .returning();
+
+      if (!updatedDoc) throw new Error("Failed to update doc");
 
       return this.mapDocWithContent(updatedDoc, newVersion);
     });

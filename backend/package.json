@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "bun run src/index.ts",
     "build": "bun build src/index.ts --outdir dist",
-    "test": "bun test"
+    "test": "bun test",
+    "lint": "bunx eslint .",
+    "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.2.7",
@@ -19,7 +21,10 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/node": "^20.12.7",
-    "typescript": "^5.9.3"
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0"
   }
 }

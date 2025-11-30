@@ -12,6 +12,7 @@ describe("GET /api/v1/docs", () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as Array<{ id: string; slug: string }>;
     expect(body).toHaveLength(1);
-    expect(body[0].id).toBe(created.id);
+    const [firstDoc] = body;
+    expect(firstDoc?.id).toBe(created.id);
   });
 });

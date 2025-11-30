@@ -103,10 +103,9 @@ const fileContent = lines.join("\n");
 async function main() {
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, fileContent, "utf8");
-  // eslint-disable-next-line no-console
   console.log(`Wrote client to ${outputPath}`);
 }
 
 if (import.meta.main) {
-  main();
+  void main();
 }

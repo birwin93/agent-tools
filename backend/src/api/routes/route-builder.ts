@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import type { MiddlewareHandler, Context, Hono } from "hono";
+import type { MiddlewareHandler, Context, Env, Hono, Input } from "hono";
 import type { z, ZodTypeAny } from "zod";
 import type { DocsService } from "../../services/docs-service";
 import { ApiErrorSchema } from "./shared-schemas";
@@ -32,12 +32,14 @@ export function createRoute<S extends RouteSchemas>(route: AppRoute<S>): AppRout
   return route;
 }
 
-type AnyMiddleware = MiddlewareHandler<any, any, any, any>;
+type AnyMiddleware = MiddlewareHandler<Env, string, Input>;
 
 const validationErrorHandler: Parameters<typeof zValidator>[2] = (result, c) => {
   if (!result.success) {
     return c.json({ error: "validation_error", message: result.error.message } satisfies typeof ApiErrorSchema._type, 400);
   }
+
+  return undefined;
 };
 
 function buildValidationMiddlewares(schemas?: RouteSchemas): AnyMiddleware[] {

@@ -31,8 +31,18 @@ export const updateDocRoute = createRoute({
       return c.json({ error: "validation_error", message: "At least one field must be provided" } satisfies typeof ApiErrorSchema._type, 400);
     }
 
+    if (!params) {
+      return c.json({ error: "validation_error", message: "Missing params" } satisfies typeof ApiErrorSchema._type, 400);
+    }
+
     try {
-      const updated = await service.updateDoc(params!.id, body!);
+      const updateBody = {
+        ...(body.title ? { title: body.title } : {}),
+        ...(body.summary ? { summary: body.summary } : {}),
+        ...(body.content ? { content: body.content } : {}),
+      };
+
+      const updated = await service.updateDoc(params.id, updateBody);
       return c.json(updated);
     } catch (err) {
       if (err instanceof DocNotFoundError) {

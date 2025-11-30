@@ -1,5 +1,5 @@
 import { readFile } from "fs/promises";
-import { dirname, resolve } from "path";
+import { resolve } from "path";
 import { homedir } from "os";
 
 export type AgentToolsConfig = {
@@ -7,26 +7,28 @@ export type AgentToolsConfig = {
   docsDir: string;
 };
 
+export type AgentToolsConfigInput = Partial<Record<keyof AgentToolsConfig, string | undefined>>;
+
 const DEFAULT_CONFIG: AgentToolsConfig = {
   baseUrl: "http://localhost:3000",
   docsDir: "./docs",
 };
 
-async function loadConfigFile(): Promise<Partial<AgentToolsConfig>> {
+async function loadConfigFile(): Promise<AgentToolsConfigInput> {
   try {
     const configPath = resolve(homedir(), ".agent-tools", "config.json");
     const content = await readFile(configPath, "utf8");
-    return JSON.parse(content) as Partial<AgentToolsConfig>;
+    return JSON.parse(content) as AgentToolsConfigInput;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return {};
     throw err;
   }
 }
 
-export async function resolveConfig(options: Partial<AgentToolsConfig>): Promise<AgentToolsConfig> {
+export async function resolveConfig(options: AgentToolsConfigInput): Promise<AgentToolsConfig> {
   const fileConfig = await loadConfigFile();
 
-  const envConfig: Partial<AgentToolsConfig> = {
+  const envConfig: AgentToolsConfigInput = {
     baseUrl: process.env.AGENT_TOOLS_BASE_URL,
     docsDir: process.env.AGENT_TOOLS_DOCS_DIR,
   };

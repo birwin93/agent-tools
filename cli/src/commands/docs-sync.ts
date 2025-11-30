@@ -5,9 +5,9 @@ import { ensureDir, writeTextFile } from "../fs-utils";
 import { stringifyMarkdown } from "../frontmatter";
 
 export type DocsSyncOptions = {
-  baseUrl?: string;
-  docsDir?: string;
-  json?: boolean;
+  baseUrl?: string | undefined;
+  docsDir?: string | undefined;
+  json?: boolean | undefined;
   apiClient?: DocsSyncApiClient;
 };
 
@@ -37,10 +37,8 @@ export async function docsSyncCommand(options: DocsSyncOptions) {
   }
 
   if (options.json) {
-    // eslint-disable-next-line no-console
     console.log(JSON.stringify({ syncedCount: results.length, docsDir: config.docsDir, docs: results }, null, 2));
   } else {
-    // eslint-disable-next-line no-console
     console.log(`Synced ${results.length} docs into ${config.docsDir}`);
   }
 }

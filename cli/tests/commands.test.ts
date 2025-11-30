@@ -62,7 +62,8 @@ describe("CLI commands", () => {
     await docsPushCommand(docPath, { docsDir: tempDir, apiClient: mockClient });
 
     expect(mockClient.createCalls).toHaveLength(1);
-    expect(mockClient.createCalls[0].body.title).toBe("New Doc");
+    const firstCreateCall = mockClient.createCalls[0];
+    expect(firstCreateCall?.body.title).toBe("New Doc");
 
     const updated = await readFile(docPath, "utf8");
     const parsed = parseMarkdownFile(updated);
@@ -89,8 +90,9 @@ describe("CLI commands", () => {
     await docsPushCommand(docPath, { docsDir: tempDir, apiClient: mockClient });
 
     expect(mockClient.updateCalls).toHaveLength(1);
-    expect(mockClient.updateCalls[0].id).toBe("old-id");
-    expect(mockClient.updateCalls[0].body.content).toContain("Old body");
+    const firstUpdateCall = mockClient.updateCalls[0];
+    expect(firstUpdateCall?.id).toBe("old-id");
+    expect(firstUpdateCall?.body.content).toContain("Old body");
 
     const updated = await readFile(docPath, "utf8");
     const parsed = parseMarkdownFile(updated);
