@@ -4,6 +4,7 @@ export type DocFrontmatter = {
   slug: string;
   title: string;
   summary: string;
+  project: string | null;
   version: number;
   updatedAt: string;
 };
@@ -13,7 +14,7 @@ export type DocWithContent = {
   slug: string;
   version: number;
   updatedAt: string;
-  frontmatter: { title: string; summary: string };
+  frontmatter: { title: string; summary: string; project: string | null };
   content: string;
 };
 
@@ -22,6 +23,7 @@ export type CreateDocRequest = {
   title: string;
   summary: string;
   content: string;
+  project?: string;
 };
 
 export type UpdateDocRequest = {

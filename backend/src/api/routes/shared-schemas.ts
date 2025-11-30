@@ -10,6 +10,7 @@ export const DocFrontmatterSchema = z.object({
   slug: z.string(),
   title: z.string(),
   summary: z.string(),
+  project: z.string().nullable(),
   version: z.number(),
   updatedAt: z.string(),
 });
@@ -22,6 +23,7 @@ export const DocWithContentSchema = z.object({
   frontmatter: z.object({
     title: z.string(),
     summary: z.string(),
+    project: z.string().nullable(),
   }),
   content: z.string(),
 });

@@ -15,8 +15,9 @@ describe("PUT /api/v1/docs/:id", () => {
     });
 
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { version: number; frontmatter: { summary: string } };
+    const body = (await res.json()) as { version: number; frontmatter: { summary: string; project: string | null } };
     expect(body.version).toBe(2);
     expect(body.frontmatter.summary).toBe("New summary");
+    expect(body.frontmatter.project).toBeNull();
   });
 });

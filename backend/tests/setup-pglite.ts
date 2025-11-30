@@ -17,6 +17,7 @@ export async function createTestContext() {
       current_version_id uuid,
       title text NOT NULL,
       summary text NOT NULL,
+      project text,
       created_at timestamptz DEFAULT now() NOT NULL,
       updated_at timestamptz DEFAULT now() NOT NULL
     );
