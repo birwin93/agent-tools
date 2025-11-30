@@ -33,7 +33,15 @@ describe("DocsService", () => {
     const service = await setupService();
     await service.createDoc({ slug: "examples", title: "Example", summary: "Use", content: "One" });
     const duplicateCreation = service.createDoc({ slug: "examples", title: "Second", summary: "Use", content: "Two" });
-    await expect(duplicateCreation).rejects.toBeInstanceOf(SlugConflictError);
+
+    await duplicateCreation.then(
+      () => {
+        throw new Error("Expected duplicate slug creation to be rejected");
+      },
+      (error) => {
+        expect(error).toBeInstanceOf(SlugConflictError);
+      },
+    );
   });
 
   it("updates docs with new versions", async () => {

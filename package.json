@@ -1,0 +1,12 @@
+{
+  "name": "agent-tools-root",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint:workflows": "bunx eslint .github/workflows --config eslint.workflows.config.js"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "eslint-plugin-yml": "^1.14.0"
+  }
+}

@@ -20,7 +20,7 @@ export function buildApp(db: Database) {
   return app;
 }
 
-async function main() {
+function main() {
   const env = parseEnv();
   const db = createDb(env.DATABASE_URL);
   const app = buildApp(db);
@@ -31,12 +31,13 @@ async function main() {
     hostname: "0.0.0.0",
   });
 
-  console.log(`Server listening on ${env.PORT}`);
 }
 
 if (import.meta.main) {
-  main().catch((err) => {
+  try {
+    main();
+  } catch (err) {
     console.error(err);
     process.exit(1);
-  });
+  }
 }

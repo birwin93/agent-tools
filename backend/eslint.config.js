@@ -15,11 +15,5 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/await-thenable": "off",
-      "@typescript-eslint/require-await": "off",
-      "no-console": "off",
-    },
   },
 );

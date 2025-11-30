@@ -21,29 +21,32 @@ export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient {
   createCalls: CreateDocCall[] = [];
   updateCalls: UpdateDocCall[] = [];
 
-  async listDocs() {
-    return typeof this.listDocsResponse === "function"
-      ? (this.listDocsResponse as () => { docs: DocFrontmatter[] })()
-      : this.listDocsResponse;
+  listDocs() {
+    const response =
+      typeof this.listDocsResponse === "function"
+        ? (this.listDocsResponse as () => { docs: DocFrontmatter[] })()
+        : this.listDocsResponse;
+
+    return Promise.resolve(response);
   }
 
-  async getDocById(id: string) {
+  getDocById(id: string) {
     const base = typeof this.getDocResponse === "function" ? this.getDocResponse() : this.getDocResponse;
-    return { ...base, id };
+    return Promise.resolve({ ...base, id });
   }
 
-  async createDoc(body: CreateDocRequest) {
+  createDoc(body: CreateDocRequest) {
     this.createCalls.push({ body });
     const next = this.createResponses.shift();
     if (!next) throw new Error("No create response configured");
-    return typeof next === "function" ? (next as () => DocWithContent)() : next;
+    return Promise.resolve(typeof next === "function" ? (next as () => DocWithContent)() : next);
   }
 
-  async updateDoc(id: string, body: { title?: string; summary?: string; content?: string }) {
+  updateDoc(id: string, body: { title?: string; summary?: string; content?: string }) {
     this.updateCalls.push({ id, body });
     const next = this.updateResponses.shift();
     if (!next) throw new Error("No update response configured");
     const response = typeof next === "function" ? (next as () => DocWithContent)() : next;
-    return { ...response, id } satisfies DocWithContent;
+    return Promise.resolve({ ...response, id } satisfies DocWithContent);
   }
 }
