@@ -1,15 +1,24 @@
 {
-  "name": "agent-tools-cli",
+  "name": "@birwin93/agent-tools",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "agent-tools": "./src/index.ts"
+    "agent-tools": "./dist/index.js"
   },
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "bun run src/index.ts",
+    "build": "tsup",
+    "prepublishOnly": "npm run build",
     "test": "bun test",
     "lint": "bunx eslint .",
     "typecheck": "bunx tsc --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "commander": "^12.1.0",
@@ -20,6 +29,7 @@
     "@types/node": "^20.12.7",
     "bun-types": "^1.3.3",
     "eslint": "^9.39.1",
+    "tsup": "^8.3.5",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.0"
   }

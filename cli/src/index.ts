@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { Command } from "commander";
 import { docsSyncCommand } from "./commands/docs-sync";
 import { docsListCommand } from "./commands/docs-list";
