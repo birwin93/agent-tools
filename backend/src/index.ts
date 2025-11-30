@@ -31,13 +31,11 @@ async function main() {
     hostname: "0.0.0.0",
   });
 
-  // eslint-disable-next-line no-console
   console.log(`Server listening on ${env.PORT}`);
 }
 
 if (import.meta.main) {
   main().catch((err) => {
-    // eslint-disable-next-line no-console
     console.error(err);
     process.exit(1);
   });

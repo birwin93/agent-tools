@@ -38,6 +38,8 @@ const validationErrorHandler: Parameters<typeof zValidator>[2] = (result, c) => 
   if (!result.success) {
     return c.json({ error: "validation_error", message: result.error.message } satisfies typeof ApiErrorSchema._type, 400);
   }
+
+  return undefined;
 };
 
 function buildValidationMiddlewares(schemas?: RouteSchemas): AnyMiddleware[] {

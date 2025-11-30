@@ -25,15 +25,15 @@ describe("DocsService", () => {
     expect(created.frontmatter.title).toBe("Example");
     const list = await service.listDocs();
     expect(list).toHaveLength(1);
-    expect(list[0].slug).toBe(created.slug);
+    const [firstDoc] = list;
+    expect(firstDoc?.slug).toBe(created.slug);
   });
 
   it("prevents slug conflicts when provided", async () => {
     const service = await setupService();
     await service.createDoc({ slug: "examples", title: "Example", summary: "Use", content: "One" });
-    await expect(
-      service.createDoc({ slug: "examples", title: "Second", summary: "Use", content: "Two" })
-    ).rejects.toBeInstanceOf(SlugConflictError);
+    const duplicateCreation = service.createDoc({ slug: "examples", title: "Second", summary: "Use", content: "Two" });
+    await expect(duplicateCreation).rejects.toBeInstanceOf(SlugConflictError);
   });
 
   it("updates docs with new versions", async () => {

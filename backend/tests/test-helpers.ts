@@ -11,7 +11,7 @@ afterEach(async () => {
 
 export async function setupTestContext() {
   const ctx = await createTestContext();
-  cleanups.push(ctx.close);
+  cleanups.push(() => ctx.close());
   return ctx;
 }
 
