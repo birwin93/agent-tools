@@ -35,6 +35,7 @@ export type DocFrontmatter = {
   slug: string;
   title: string;
   summary: string;
+  project: string | null;
   version: number;
   updatedAt: string;
 };
@@ -47,6 +48,7 @@ export type DocWithContent = {
   frontmatter: {
     title: string;
     summary: string;
+    project: string | null;
   };
   content: string;
 };
@@ -56,6 +58,7 @@ export type CreateDocInput = {
   title: string;
   summary: string;
   content: string;
+  project?: string;
 };
 
 export type UpdateDocInput = {
@@ -79,6 +82,7 @@ export class DocsService {
         slug: docs.slug,
         title: docs.title,
         summary: docs.summary,
+        project: docs.project,
         version: docVersions.version,
         updatedAt: docs.updatedAt,
       })
@@ -91,6 +95,7 @@ export class DocsService {
       slug: row.slug,
       title: row.title,
       summary: row.summary,
+      project: row.project,
       version: row.version,
       updatedAt: toIsoString(row.updatedAt),
     }));
@@ -151,6 +156,7 @@ export class DocsService {
           slug,
           title: input.title,
           summary: input.summary,
+          project: input.project ?? null,
           updatedAt: now as unknown as Date,
         })
         .returning();
@@ -184,6 +190,7 @@ export class DocsService {
         frontmatter: {
           title: versionRow.title,
           summary: versionRow.summary,
+          project: docRow.project,
         },
         content: versionRow.content,
       } satisfies DocWithContent;
@@ -251,6 +258,7 @@ export class DocsService {
       frontmatter: {
         title: versionRow.title,
         summary: versionRow.summary,
+        project: docRow.project,
       },
       content: versionRow.content,
     };

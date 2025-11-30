@@ -23,10 +23,26 @@ describe("DocsService", () => {
     const created = await service.createDoc({ title: "Example", summary: "Use this", content: "Body" });
 
     expect(created.frontmatter.title).toBe("Example");
+    expect(created.frontmatter.project).toBeNull();
     const list = await service.listDocs();
     expect(list).toHaveLength(1);
     const [firstDoc] = list;
     expect(firstDoc?.slug).toBe(created.slug);
+    expect(firstDoc?.project).toBeNull();
+  });
+
+  it("stores an optional project name", async () => {
+    const service = await setupService();
+    const created = await service.createDoc({
+      title: "Example",
+      summary: "Use this",
+      content: "Body",
+      project: "my-project",
+    });
+
+    expect(created.frontmatter.project).toBe("my-project");
+    const fetched = await service.getDocById(created.id);
+    expect(fetched?.frontmatter.project).toBe("my-project");
   });
 
   it("prevents slug conflicts when provided", async () => {

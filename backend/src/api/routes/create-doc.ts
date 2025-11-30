@@ -9,6 +9,7 @@ const CreateDocBodySchema = z.object({
   title: z.string().min(1),
   summary: z.string().min(1),
   content: z.string().min(1),
+  project: z.string().min(1).optional(),
 });
 
 export const createDocRoute = createRoute({
@@ -32,6 +33,7 @@ export const createDocRoute = createRoute({
         title: body.title,
         summary: body.summary,
         content: body.content,
+        ...(body.project ? { project: body.project } : {}),
       };
 
       const created = await service.createDoc(payload);

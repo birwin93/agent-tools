@@ -8,6 +8,7 @@ export const docs = pgTable(
     currentVersionId: uuid("current_version_id"),
     title: text("title").notNull(),
     summary: text("summary").notNull(),
+    project: text("project"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
