@@ -16,4 +16,6 @@ export type DocsPushApiClient = {
   updateDoc(id: string, body: UpdateDocRequest): Promise<DocWithContent>;
 };
 
+export type DocsEditApiClient = DocsSyncApiClient & DocsPushApiClient;
+
 export class ApiClient extends GeneratedApiClient {}

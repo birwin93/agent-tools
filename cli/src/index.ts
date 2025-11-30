@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { docsSyncCommand } from "./commands/docs-sync";
 import { docsListCommand } from "./commands/docs-list";
 import { docsPushCommand } from "./commands/docs-push";
+import { docsEditCommand } from "./commands/docs-edit";
 
 type DocsSyncOptions = {
   baseUrl?: string | undefined;
@@ -19,6 +20,11 @@ type DocsPushOptions = {
   baseUrl?: string | undefined;
   docsDir?: string | undefined;
   dryRun?: boolean | undefined;
+};
+
+type DocsEditOptions = {
+  baseUrl?: string | undefined;
+  editor?: string | undefined;
 };
 
 const program = new Command();
@@ -48,6 +54,14 @@ program
   .option("--dry-run", "dry run")
   .action(async (path: string, options: DocsPushOptions) => {
     await docsPushCommand(path, { baseUrl: options.baseUrl, docsDir: options.docsDir, dryRun: options.dryRun });
+  });
+
+program
+  .command("docs edit <id>")
+  .option("--base-url <baseUrl>")
+  .option("--editor <editor>", "editor command to launch")
+  .action(async (id: string, options: DocsEditOptions) => {
+    await docsEditCommand(id, { baseUrl: options.baseUrl, editor: options.editor });
   });
 
 program.parse();

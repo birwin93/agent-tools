@@ -4,6 +4,7 @@ import { join, resolve } from "path";
 import { tmpdir } from "os";
 import { docsSyncCommand } from "../src/commands/docs-sync";
 import { docsPushCommand } from "../src/commands/docs-push";
+import { docsEditCommand } from "../src/commands/docs-edit";
 import { parseMarkdownFile } from "../src/frontmatter";
 import { MockApiClient } from "./mock-api-client";
 
@@ -99,5 +100,51 @@ describe("CLI commands", () => {
     expect(parsed.frontmatter.version).toBe(2);
     expect(parsed.frontmatter.summary).toBe("New summary");
     expect(parsed.content.trim()).toBe("Updated body");
+  });
+
+  it("lets users edit a doc and pushes changes", async () => {
+    const mockClient = new MockApiClient();
+    const updatedAt = new Date().toISOString();
+    mockClient.getDocResponse = {
+      id: "doc-1",
+      slug: "first",
+      version: 1,
+      updatedAt,
+      frontmatter: { title: "First", summary: "Summary" },
+      content: "Existing content",
+    };
+    mockClient.updateResponses.push({
+      id: "doc-1",
+      slug: "first",
+      version: 2,
+      updatedAt,
+      frontmatter: { title: "First", summary: "Summary" },
+      content: "Existing content\nEdited",
+    });
+
+    await docsEditCommand("doc-1", {
+      apiClient: mockClient,
+      editFile: async (filePath) => {
+        const current = await readFile(filePath, "utf8");
+        await writeFile(filePath, `${current.trim()}\nEdited\n`);
+      },
+    });
+
+    expect(mockClient.updateCalls).toHaveLength(1);
+    expect(mockClient.updateCalls[0]?.body.content).toContain("Edited");
+  });
+
+  it("skips pushing when no changes are made", async () => {
+    const mockClient = new MockApiClient();
+    mockClient.updateResponses.push(mockClient.getDocResponse as any);
+
+    await docsEditCommand("doc-1", {
+      apiClient: mockClient,
+      editFile: async () => {
+        /* no-op */
+      },
+    });
+
+    expect(mockClient.updateCalls).toHaveLength(0);
   });
 });
