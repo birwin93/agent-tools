@@ -1,16 +1,21 @@
 {
   "name": "agent-tools-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "bin": {
-    "agent-tools": "./src/index.ts"
+    "agent-tools": "./dist/agent-tools"
   },
   "scripts": {
     "dev": "bun run src/index.ts",
+    "build": "bun build ./src/index.ts --compile --target=bun --outfile=dist/agent-tools",
+    "prepare": "bun run build",
     "test": "bun test",
     "lint": "bunx eslint .",
     "typecheck": "bunx tsc --noEmit"
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "commander": "^12.1.0",
     "gray-matter": "^4.0.3"
