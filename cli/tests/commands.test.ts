@@ -136,7 +136,7 @@ describe("CLI commands", () => {
 
   it("skips pushing when no changes are made", async () => {
     const mockClient = new MockApiClient();
-    mockClient.updateResponses.push(mockClient.getDocResponse as any);
+    mockClient.updateResponses.push(mockClient.getDocResponse);
 
     await docsEditCommand("doc-1", {
       apiClient: mockClient,

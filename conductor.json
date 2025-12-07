@@ -1,0 +1,7 @@
+{
+  "name": "baton-rouge",
+  "description": "Conductor workspace for agent-tools backend and CLI",
+  "scripts": {
+    "setup": "./conductor-setup.sh"
+  }
+}
