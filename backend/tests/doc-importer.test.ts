@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { DocImporter, type DocExtractor, type HtmlFetcher } from "../src/services/doc-importer";
+import { DefaultDocImporter, type DocExtractor, type HtmlFetcher } from "../src/services/doc-importer";
 
 class MockFetcher implements HtmlFetcher {
   calls: string[] = [];
@@ -28,7 +28,7 @@ describe("DocImporter", () => {
       content: "Content from extractor\n```js\ncode();\n```",
     });
 
-    const importer = new DocImporter(fetcher, extractor);
+    const importer = new DefaultDocImporter(fetcher, extractor);
     const imported = await importer.importDoc({ name: "My Doc", url: "https://example.com/path" });
 
     expect(fetcher.calls).toEqual(["https://example.com/path"]);

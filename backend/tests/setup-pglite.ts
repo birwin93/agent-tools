@@ -46,7 +46,7 @@ export async function createTestContext(options: Partial<AppOptions> = {}) {
         return Promise.resolve({ title: input.name, summary: "summary", content: "content" });
       },
     } satisfies DocImporter);
-  const app = buildApp(db, { docService, docImporter }) as ClosableApp;
+  const app = buildApp({ docService, docImporter }) as ClosableApp;
 
   return {
     db,

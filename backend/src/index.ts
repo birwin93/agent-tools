@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "bun";
 import { parseEnv } from "./env";
-import { createDb, type Database } from "./db";
+import { createDb } from "./db";
 import { DocsService } from "./services/docs-service";
 import { createDefaultDocImporter, type DocImporter } from "./services/doc-importer";
 import { registerRoutes } from "./api/routes";
@@ -14,7 +14,7 @@ export type AppOptions = {
   docImporter: DocImporter;
 };
 
-export function buildApp(db: Database, options: AppOptions) {
+export function buildApp(options: AppOptions) {
   const app = new Hono();
   const service = options.docService;
   const docImporter = options.docImporter;
@@ -36,12 +36,12 @@ function main() {
   }
   const docImporter = createDefaultDocImporter({
     apiKey: env.OPENROUTER_API_KEY,
-    model: env.OPENROUTER_MODEL,
-    referer: env.OPENROUTER_HTTP_REFERER,
-    title: env.OPENROUTER_TITLE,
+    ...(env.OPENROUTER_MODEL ? { model: env.OPENROUTER_MODEL } : {}),
+    ...(env.OPENROUTER_HTTP_REFERER ? { referer: env.OPENROUTER_HTTP_REFERER } : {}),
+    ...(env.OPENROUTER_TITLE ? { title: env.OPENROUTER_TITLE } : {}),
   });
 
-  const app = buildApp(db, {
+  const app = buildApp({
     docService,
     docImporter,
   });

@@ -18,6 +18,10 @@ export type ImportedDocData = {
   content: string;
 };
 
+export type DocImporter = {
+  importDoc(input: DocImportInput): Promise<ImportedDocData>;
+};
+
 export interface HtmlFetcher {
   fetch(url: string): Promise<string>;
 }
@@ -26,7 +30,7 @@ export interface DocExtractor {
   extract(input: { html: string; url: string; name: string }): Promise<ExtractedDoc>;
 }
 
-export class DocImporter {
+export class DefaultDocImporter implements DocImporter {
   constructor(private fetcher: HtmlFetcher, private extractor: DocExtractor) {}
 
   async importDoc(input: DocImportInput) {
@@ -149,5 +153,5 @@ export function createDefaultDocImporter(
 ): DocImporter {
   const fetcher = new PlaywrightHtmlFetcher();
   const extractor = new OpenRouterDocExtractor(config);
-  return new DocImporter(fetcher, extractor);
+  return new DefaultDocImporter(fetcher, extractor);
 }
