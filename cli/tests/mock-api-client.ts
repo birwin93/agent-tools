@@ -1,12 +1,13 @@
-import type { DocsPushApiClient, DocsSyncApiClient } from "../src/api-client";
+import type { DocsImportApiClient, DocsPushApiClient, DocsSyncApiClient } from "../src/api-client";
 import type { CreateDocRequest, DocFrontmatter, DocWithContent } from "../src/generated/api-client";
 
 type CreateDocCall = { body: CreateDocRequest };
 type UpdateDocCall = { id: string; body: { title?: string; summary?: string; content?: string } };
+type ImportDocCall = { body: { name: string; url: string } };
 
 type MockResponse<T> = T | (() => T);
 
-export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient {
+export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient, DocsImportApiClient {
   listDocsResponse: MockResponse<{ docs: DocFrontmatter[] }> = { docs: [] };
   getDocResponse: MockResponse<DocWithContent> = {
     id: "doc-1",
@@ -18,8 +19,10 @@ export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient {
   };
   createResponses: MockResponse<DocWithContent>[] = [];
   updateResponses: MockResponse<DocWithContent>[] = [];
+  importResponses: MockResponse<DocWithContent>[] = [];
   createCalls: CreateDocCall[] = [];
   updateCalls: UpdateDocCall[] = [];
+  importCalls: ImportDocCall[] = [];
 
   listDocs() {
     const response =
@@ -48,5 +51,12 @@ export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient {
     if (!next) throw new Error("No update response configured");
     const response = typeof next === "function" ? (next as () => DocWithContent)() : next;
     return Promise.resolve({ ...response, id } satisfies DocWithContent);
+  }
+
+  importDoc(body: { name: string; url: string }) {
+    this.importCalls.push({ body });
+    const next = this.importResponses.shift();
+    if (!next) throw new Error("No import response configured");
+    return Promise.resolve(typeof next === "function" ? (next as () => DocWithContent)() : next);
   }
 }

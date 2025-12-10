@@ -1,17 +1,9 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { docVersions, docs, type Database } from "../db";
+import { slugify } from "../utils/slugify";
 
 export class SlugConflictError extends Error {}
 export class DocNotFoundError extends Error {}
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
 
 function toIsoString(value: unknown): string {
   if (value instanceof Date) return value.toISOString();

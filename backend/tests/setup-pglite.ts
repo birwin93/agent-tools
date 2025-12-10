@@ -1,14 +1,16 @@
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { buildApp } from "../src/index";
+import { buildApp, type AppOptions } from "../src/index";
 import * as schema from "../src/db/schema";
+import { DocsService } from "../src/services/docs-service";
+import type { DocImporter } from "../src/services/doc-importer";
 
 type ClosableApp = ReturnType<typeof buildApp> & {
   close?: () => Promise<void>;
 };
 
-export async function createTestContext() {
+export async function createTestContext(options: Partial<AppOptions> = {}) {
   const client = new PGlite();
   await client.query(`
     CREATE TABLE docs (
@@ -36,7 +38,15 @@ export async function createTestContext() {
   `);
 
   const db = drizzle(client, { schema }) as unknown as PostgresJsDatabase<typeof schema>;
-  const app = buildApp(db) as ClosableApp;
+  const docService = options.docService ?? new DocsService(db);
+  const docImporter: DocImporter =
+    options.docImporter ??
+    ({
+      async importDoc(input) {
+        return { title: input.name, summary: "summary", content: "content" };
+      },
+    } satisfies DocImporter);
+  const app = buildApp(db, { docService, docImporter }) as ClosableApp;
 
   return {
     db,
