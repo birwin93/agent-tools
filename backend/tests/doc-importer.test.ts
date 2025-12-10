@@ -1,22 +1,21 @@
 import { describe, expect, it } from "bun:test";
-import { createTestContext } from "./setup-pglite";
 import { DocImporter, type DocExtractor, type HtmlFetcher } from "../src/services/doc-importer";
 
 class MockFetcher implements HtmlFetcher {
   calls: string[] = [];
   constructor(private html: string) {}
-  async fetch(url: string): Promise<string> {
+  fetch(url: string): Promise<string> {
     this.calls.push(url);
-    return this.html;
+    return Promise.resolve(this.html);
   }
 }
 
 class MockExtractor implements DocExtractor {
   calls: Array<{ html: string; url: string; name: string }> = [];
   constructor(private result: { title?: string; summary?: string; content: string }) {}
-  async extract(input: { html: string; url: string; name: string }) {
+  extract(input: { html: string; url: string; name: string }) {
     this.calls.push(input);
-    return this.result;
+    return Promise.resolve(this.result);
   }
 }
 

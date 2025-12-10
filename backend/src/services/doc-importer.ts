@@ -1,6 +1,5 @@
 import { chromium, type Browser } from "playwright";
 import { OpenRouter } from "@openrouter/sdk";
-import type { ChatResponse } from "@openrouter/sdk/esm/models/chatresponse.js";
 
 export type ExtractedDoc = {
   title?: string;
@@ -64,7 +63,20 @@ export class PlaywrightHtmlFetcher implements HtmlFetcher {
   }
 }
 
-function parseAssistantContent(response: ChatResponse): string {
+type MinimalChatResponse = {
+  choices: Array<{ message: { content?: unknown } }>;
+};
+
+function isChatResponse(value: unknown): value is MinimalChatResponse {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Array.isArray((value as { choices?: unknown }).choices) &&
+    (value as { choices?: unknown[] }).choices?.length !== undefined
+  );
+}
+
+function parseAssistantContent(response: MinimalChatResponse): string {
   const content = response.choices[0]?.message.content;
   if (typeof content === "string") return content;
   if (Array.isArray(content)) {
@@ -113,7 +125,7 @@ Source URL: ${url}
 
     const trimmedHtml = html.length > 60000 ? `${html.slice(0, 60000)}\n<!-- truncated -->` : html;
 
-    const response = await this.client.chat.send({
+    const rawResponse = await this.client.chat.send({
       model: this.model ?? "openai/gpt-4o-mini",
       responseFormat: { type: "json_object" },
       messages: [
@@ -122,7 +134,11 @@ Source URL: ${url}
       ],
     });
 
-    const rawContent = parseAssistantContent(response);
+    if (!isChatResponse(rawResponse)) {
+      throw new Error("Invalid response from OpenRouter");
+    }
+
+    const rawContent = parseAssistantContent(rawResponse);
     const parsed = JSON.parse(rawContent) as ExtractedDoc;
     return parsed;
   }

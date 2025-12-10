@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { DocImporter } from "../../services/doc-importer";
 import { slugify } from "../../utils/slugify";
 import { createRoute } from "./route-builder";
 import { ApiErrorSchema, DocWithContentSchema } from "./shared-schemas";

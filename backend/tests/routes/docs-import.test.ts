@@ -7,9 +7,9 @@ describe("POST /api/v1/docs/import", () => {
   it("uses the configured doc importer and returns created doc", async () => {
     class MockImporter {
       calls: DocImportInput[] = [];
-      async importDoc(input: DocImportInput): Promise<{ title?: string; summary?: string; content: string }> {
+      importDoc(input: DocImportInput): Promise<{ title?: string; summary?: string; content: string }> {
         this.calls.push(input);
-        return { title: input.name, summary: "summary", content: "content" };
+        return Promise.resolve({ title: input.name, summary: "summary", content: "content" });
       }
     }
 
@@ -30,8 +30,8 @@ describe("POST /api/v1/docs/import", () => {
 
   it("returns 500 if importer throws", async () => {
     class ThrowingImporter {
-      async importDoc(): Promise<{ content: string }> {
-        throw new Error("boom");
+      importDoc(): Promise<{ content: string }> {
+        return Promise.reject(new Error("boom"));
       }
     }
     const ctx = await setupTestContext({ docImporter: new ThrowingImporter() });
