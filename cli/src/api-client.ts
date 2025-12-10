@@ -3,6 +3,7 @@ import {
   type CreateDocRequest,
   type DocFrontmatter,
   type DocWithContent,
+  type ImportDocRequest,
   type UpdateDocRequest,
 } from "./generated/api-client";
 
@@ -17,5 +18,9 @@ export type DocsPushApiClient = {
 };
 
 export type DocsEditApiClient = DocsSyncApiClient & DocsPushApiClient;
+
+export type DocsImportApiClient = {
+  importDoc(body: ImportDocRequest): Promise<DocWithContent>;
+};
 
 export class ApiClient extends GeneratedApiClient {}

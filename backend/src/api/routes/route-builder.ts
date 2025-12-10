@@ -3,6 +3,7 @@ import type { MiddlewareHandler, Context, Env, Hono, Input } from "hono";
 import type { z, ZodTypeAny } from "zod";
 import type { DocsService } from "../../services/docs-service";
 import { ApiErrorSchema } from "./shared-schemas";
+import type { DocImporter } from "../../services/doc-importer";
 
 export type RouteSchemas = {
   params?: ZodTypeAny;
@@ -14,6 +15,7 @@ export type RouteSchemas = {
 export type RouteContext<S extends RouteSchemas> = {
   c: Context;
   service: DocsService;
+  docImporter: DocImporter;
   params?: S["params"] extends ZodTypeAny ? z.infer<S["params"]> : undefined;
   query?: S["query"] extends ZodTypeAny ? z.infer<S["query"]> : undefined;
   body?: S["body"] extends ZodTypeAny ? z.infer<S["body"]> : undefined;
@@ -59,9 +61,10 @@ function buildValidationMiddlewares(schemas?: RouteSchemas): AnyMiddleware[] {
   return handlers;
 }
 
-function wrapHandler<S extends RouteSchemas>(route: AppRoute<S>, service: DocsService) {
+function wrapHandler<S extends RouteSchemas>(route: AppRoute<S>, service: DocsService, docImporter: DocImporter) {
   return async (c: Context) => {
     const ctx = { c, service } as RouteContext<S> & Record<string, unknown>;
+    ctx.docImporter = docImporter;
     const reqWithValidation = c.req as Context["req"] & {
       valid?: (type: "param" | "query" | "json") => unknown;
     };
@@ -80,10 +83,10 @@ function wrapHandler<S extends RouteSchemas>(route: AppRoute<S>, service: DocsSe
   };
 }
 
-export function registerRoutes(api: Hono, service: DocsService, routes: AppRoute[] = []) {
+export function registerRoutes(api: Hono, service: DocsService, routes: AppRoute[] = [], docImporter: DocImporter) {
   routes.forEach((route) => {
     const validators = buildValidationMiddlewares(route.schemas);
-    const handler = wrapHandler(route, service);
+    const handler = wrapHandler(route, service, docImporter);
 
     api[route.method](route.path, ...validators, handler);
   });

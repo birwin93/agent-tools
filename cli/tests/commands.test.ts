@@ -5,6 +5,7 @@ import { tmpdir } from "os";
 import { docsSyncCommand } from "../src/commands/docs-sync";
 import { docsPushCommand } from "../src/commands/docs-push";
 import { docsEditCommand } from "../src/commands/docs-edit";
+import { docsImportCommand } from "../src/commands/docs-import";
 import { parseMarkdownFile } from "../src/frontmatter";
 import { MockApiClient } from "./mock-api-client";
 
@@ -146,5 +147,38 @@ describe("CLI commands", () => {
     });
 
     expect(mockClient.updateCalls).toHaveLength(0);
+  });
+
+  it("imports a doc from a url", async () => {
+    const mockClient = new MockApiClient();
+    const updatedAt = new Date().toISOString();
+    mockClient.importResponses.push({
+      id: "imported-id",
+      slug: "my-doc",
+      version: 1,
+      updatedAt,
+      frontmatter: { title: "My Doc", summary: "Summary" },
+      content: "Imported content",
+    });
+
+    const originalLog = console.log;
+    const logs: string[] = [];
+    console.log = (...args: unknown[]) => {
+      logs.push(args.join(" "));
+    };
+
+    try {
+      await docsImportCommand({
+        name: "My Doc",
+        url: "https://example.com",
+        apiClient: mockClient,
+      });
+    } finally {
+      console.log = originalLog;
+    }
+
+    expect(mockClient.importCalls).toHaveLength(1);
+    expect(mockClient.importCalls[0]?.body.url).toContain("example.com");
+    expect(logs.some((line) => line.includes("Imported doc"))).toBe(true);
   });
 });
