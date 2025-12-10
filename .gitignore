@@ -1,3 +1,4 @@
 node_modules
 .DS_Store
 cli/dist
+backend/.env
