@@ -119,9 +119,9 @@ Return ONLY a JSON object with keys:
 - content: markdown body capturing the main article/tutorial/reference content. Keep the full page content but ignore navigation menus, headers/footers, cookie banners, popups, and ads. Preserve all code blocks from the page. Include important links as markdown links.
 
 Rules:
-- Keep content under 800 words.
 - Maintain headings and code fences where appropriate.
 - Do not include the original HTML or any extra keys outside the required object.
+- Include the full relevant content; do not truncate sections solely to meet a word limit.
 
 Doc name hint: ${name}
 Source URL: ${url}
