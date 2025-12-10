@@ -15,10 +15,12 @@ type ClosableApp = ReturnType<typeof buildApp> & {
 
 export async function createTestContext(options: Partial<AppOptions> = {}) {
   const client = new PGlite();
-
-  const db = drizzle(client, { schema }) as unknown as PostgresJsDatabase<typeof schema>;
+  const pgliteDb = drizzle(client, { schema });
   const migrationsFolder = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "drizzle");
-  await migrate(db, { migrationsFolder });
+  await migrate(pgliteDb, { migrationsFolder });
+
+  // Cast keeps DocsService happy while we use the PGlite driver in tests.
+  const db = pgliteDb as unknown as PostgresJsDatabase<typeof schema>;
 
   const docService = options.docService ?? new DocsService(db);
   const docImporter: DocImporter =
