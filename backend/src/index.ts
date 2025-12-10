@@ -31,9 +31,6 @@ function main() {
   const env = parseEnv();
   const db = createDb(env.DATABASE_URL);
   const docService = new DocsService(db);
-  if (!env.OPENROUTER_API_KEY) {
-    throw new Error("OPENROUTER_API_KEY is required to start the server (doc importer)");
-  }
   const docImporter = createDefaultDocImporter({
     apiKey: env.OPENROUTER_API_KEY,
     ...(env.OPENROUTER_MODEL ? { model: env.OPENROUTER_MODEL } : {}),
@@ -55,10 +52,5 @@ function main() {
 }
 
 if (import.meta.main) {
-  try {
-    main();
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
-  }
+  main();
 }
