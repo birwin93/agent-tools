@@ -37,8 +37,10 @@ type DocsImportOptions = {
 const program = new Command();
 program.name("agent-tools").description("Agent tools CLI");
 
-program
-  .command("docs sync")
+const docs = program.command("docs").description("Docs commands");
+
+docs
+  .command("sync")
   .option("--base-url <baseUrl>")
   .option("--docs-dir <docsDir>")
   .option("--json", "output json")
@@ -46,16 +48,17 @@ program
     await docsSyncCommand({ baseUrl: options.baseUrl, docsDir: options.docsDir, json: options.json });
   });
 
-program
-  .command("docs list")
+docs
+  .command("list")
   .option("--docs-dir <docsDir>")
   .option("--json", "output json")
   .action(async (options: DocsListOptions) => {
     await docsListCommand({ docsDir: options.docsDir, json: options.json });
   });
 
-program
-  .command("docs push <path>")
+docs
+  .command("push")
+  .argument("<path>")
   .option("--base-url <baseUrl>")
   .option("--docs-dir <docsDir>")
   .option("--dry-run", "dry run")
@@ -63,21 +66,26 @@ program
     await docsPushCommand(path, { baseUrl: options.baseUrl, docsDir: options.docsDir, dryRun: options.dryRun });
   });
 
-program
-  .command("docs edit <id>")
+docs
+  .command("edit")
+  .argument("<id>")
   .option("--base-url <baseUrl>")
   .option("--editor <editor>", "editor command to launch")
   .action(async (id: string, options: DocsEditOptions) => {
     await docsEditCommand(id, { baseUrl: options.baseUrl, editor: options.editor });
   });
 
-program
-  .command("docs import")
+docs
+  .command("import")
   .requiredOption("--name <name>")
   .requiredOption("--url <url>")
   .option("--base-url <baseUrl>")
   .action(async (options: DocsImportOptions) => {
     await docsImportCommand({ baseUrl: options.baseUrl, name: options.name, url: options.url });
   });
+
+if (process.argv.length <= 2) {
+  program.help({ error: false });
+}
 
 program.parse();

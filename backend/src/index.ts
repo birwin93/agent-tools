@@ -52,12 +52,9 @@ export function buildApp(options: AppOptions) {
   app.use("/*", cors());
 
   const api = app.basePath(API_PREFIX);
-<<<<<<< HEAD
-  registerRoutes(api, service, docImporter);
-=======
+
   api.use("*", requestLogger);
-  registerRoutes(api, service);
->>>>>>> 8b4eaf8 (add logging)
+  registerRoutes(api, service, docImporter);
 
   return app;
 }
@@ -69,7 +66,7 @@ function main() {
 
   debugLog("Creating database connection");
   const db = createDb(env.DATABASE_URL);
-<<<<<<< HEAD
+  
   const docService = new DocsService(db);
   const docImporter = createDefaultDocImporter({
     apiKey: env.OPENROUTER_API_KEY,
@@ -82,12 +79,6 @@ function main() {
     docService,
     docImporter,
   });
-=======
-  debugLog("Database connection created");
-
-  debugLog("Building application");
-  const app = buildApp(db);
->>>>>>> 8b4eaf8 (add logging)
 
   debugLog(`Starting server on http://0.0.0.0:${env.PORT}${API_PREFIX}`);
   const server = serve({
