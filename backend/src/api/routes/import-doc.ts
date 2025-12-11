@@ -28,13 +28,20 @@ export const importDocRoute = createRoute({
     }
 
     try {
+      console.log("[docs/import] starting", { name: body.name, url: body.url });
       const imported = await docImporter.importDoc({ name: body.name, url: body.url });
+      console.log("[docs/import] importer response", {
+        title: imported.title,
+        hasSummary: Boolean(imported.summary),
+        contentLength: imported.content.length,
+      });
       const created = await service.createDoc({
         slug: slugify(body.name),
         title: imported.title ?? body.name,
         summary: imported.summary ?? imported.content.slice(0, 200),
         content: imported.content,
       });
+      console.log("[docs/import] created doc", { id: created.id, slug: created.slug });
       return c.json(created, 201);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";

@@ -2,10 +2,12 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { mkdtemp, readFile, rm, writeFile } from "fs/promises";
 import { join, resolve } from "path";
 import { tmpdir } from "os";
+import { docsListCommand } from "../src/commands/docs-list";
 import { docsSyncCommand } from "../src/commands/docs-sync";
 import { docsPushCommand } from "../src/commands/docs-push";
 import { docsEditCommand } from "../src/commands/docs-edit";
 import { docsImportCommand } from "../src/commands/docs-import";
+import { docsReadCommand } from "../src/commands/docs-read";
 import { parseMarkdownFile } from "../src/frontmatter";
 import { MockApiClient } from "./mock-api-client";
 
@@ -19,13 +21,64 @@ afterEach(async () => {
 });
 
 describe("CLI commands", () => {
+  it("lists docs from the backend", async () => {
+    const mockClient = new MockApiClient();
+    const updatedAt = new Date().toISOString();
+    mockClient.listDocsResponse = {
+      docs: [
+        { id: "doc-1", slug: "first", title: "First", version: 1, updatedAt },
+        { id: "doc-2", slug: "second", title: "Second", version: 3, updatedAt },
+      ],
+    };
+    const logs: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => {
+      logs.push(args.join(" "));
+    };
+    try {
+      await docsListCommand({ json: true, apiClient: mockClient });
+    } finally {
+      console.log = originalLog;
+    }
+    const parsed = JSON.parse(logs.join(""));
+    expect(parsed.docs).toHaveLength(2);
+    expect(parsed.docs[1]?.slug).toBe("second");
+  });
+
+  it("reads a doc by slug and pretty prints it", async () => {
+    const mockClient = new MockApiClient();
+    const updatedAt = new Date().toISOString();
+    mockClient.getDocResponse = {
+      id: "doc-1",
+      slug: "doc-1",
+      version: 2,
+      updatedAt,
+      frontmatter: { title: "Doc Title", summary: "Doc summary" },
+      content: "Doc body",
+    };
+    const logs: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => {
+      logs.push(args.join(" "));
+    };
+    try {
+      await docsReadCommand("doc-title", { apiClient: mockClient });
+    } finally {
+      console.log = originalLog;
+    }
+    const output = logs.join("\n");
+    expect(output).toContain("Title   : Doc Title");
+    expect(output).toContain("Slug    : doc-title");
+    expect(output).toContain("Doc body");
+  });
+
   it("syncs docs using provided API client", async () => {
     tempDir = await mkdtemp(join(tmpdir(), "agent-tools-sync-"));
     const mockClient = new MockApiClient();
     const updatedAt = new Date().toISOString();
     mockClient.listDocsResponse = {
       docs: [
-        { id: "doc-1", slug: "first", title: "First", summary: "Summary", version: 1, updatedAt },
+        { id: "doc-1", slug: "first", title: "First", version: 1, updatedAt },
       ],
     };
     mockClient.getDocResponse = {

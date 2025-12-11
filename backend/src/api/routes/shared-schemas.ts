@@ -9,9 +9,12 @@ export const DocFrontmatterSchema = z.object({
   id: z.string(),
   slug: z.string(),
   title: z.string(),
-  summary: z.string(),
   version: z.number(),
   updatedAt: z.string(),
+});
+
+export const DocFrontmatterListSchema = z.object({
+  docs: z.array(DocFrontmatterSchema),
 });
 
 export const DocWithContentSchema = z.object({

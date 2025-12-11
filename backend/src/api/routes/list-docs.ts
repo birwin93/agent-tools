@@ -1,16 +1,16 @@
 import { createRoute } from "./route-builder";
-import { DocFrontmatterSchema } from "./shared-schemas";
+import { DocFrontmatterListSchema } from "./shared-schemas";
 
 export const listDocsRoute = createRoute({
   method: "get",
   path: "/docs",
   schemas: {
     responses: {
-      200: DocFrontmatterSchema.array(),
+      200: DocFrontmatterListSchema,
     },
   },
   handler: async ({ service, c }) => {
     const docs = await service.listDocs();
-    return c.json(docs);
+    return c.json({ docs });
   },
 });

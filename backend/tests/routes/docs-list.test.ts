@@ -10,9 +10,9 @@ describe("GET /api/v1/docs", () => {
 
     const res = await ctx.app.request("/api/v1/docs");
     expect(res.status).toBe(200);
-    const body = (await res.json()) as Array<{ id: string; slug: string }>;
-    expect(body).toHaveLength(1);
-    const [firstDoc] = body;
+    const body = (await res.json()) as { docs: Array<{ id: string; slug: string }> };
+    expect(body.docs).toHaveLength(1);
+    const [firstDoc] = body.docs;
     expect(firstDoc?.id).toBe(created.id);
   });
 });

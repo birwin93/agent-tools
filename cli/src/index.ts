@@ -5,6 +5,7 @@ import { docsListCommand } from "./commands/docs-list";
 import { docsPushCommand } from "./commands/docs-push";
 import { docsEditCommand } from "./commands/docs-edit";
 import { docsImportCommand } from "./commands/docs-import";
+import { docsReadCommand } from "./commands/docs-read";
 
 type DocsSyncOptions = {
   baseUrl?: string | undefined;
@@ -13,7 +14,12 @@ type DocsSyncOptions = {
 };
 
 type DocsListOptions = {
-  docsDir?: string | undefined;
+  baseUrl?: string | undefined;
+  json?: boolean | undefined;
+};
+
+type DocsReadOptions = {
+  baseUrl?: string | undefined;
   json?: boolean | undefined;
 };
 
@@ -50,10 +56,19 @@ docs
 
 docs
   .command("list")
-  .option("--docs-dir <docsDir>")
+  .option("--base-url <baseUrl>")
   .option("--json", "output json")
   .action(async (options: DocsListOptions) => {
-    await docsListCommand({ docsDir: options.docsDir, json: options.json });
+    await docsListCommand({ baseUrl: options.baseUrl, json: options.json });
+  });
+
+docs
+  .command("read")
+  .argument("<slug>")
+  .option("--base-url <baseUrl>")
+  .option("--json", "output json")
+  .action(async (slug: string, options: DocsReadOptions) => {
+    await docsReadCommand(slug, { baseUrl: options.baseUrl, json: options.json });
   });
 
 docs

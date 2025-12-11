@@ -34,8 +34,16 @@ export class DefaultDocImporter implements DocImporter {
   constructor(private fetcher: HtmlFetcher, private extractor: DocExtractor) {}
 
   async importDoc(input: DocImportInput) {
+    console.log("[doc-importer] fetching html", { url: input.url, name: input.name });
     const html = await this.fetcher.fetch(input.url);
+    console.log("[doc-importer] html fetched", { length: html.length });
+    console.log("[doc-importer] extracting content");
     const extracted = await this.extractor.extract({ html, url: input.url, name: input.name });
+    console.log("[doc-importer] extractor output", {
+      hasTitle: Boolean(extracted.title?.trim()),
+      hasSummary: Boolean(extracted.summary?.trim()),
+      hasContent: Boolean(extracted.content?.trim()),
+    });
     const content = extracted.content?.trim();
 
     if (!content || content.length === 0) {
@@ -60,7 +68,42 @@ export class PlaywrightHtmlFetcher implements HtmlFetcher {
     try {
       await page.goto(url, { waitUntil: "load" });
       await page.waitForTimeout(5000);
-      return await page.content();
+      // Trim down the HTML we pass to the model: drop non-content tags and strip
+      // noisy attributes so we send a lighter payload.
+      const cleanedBodyHtml = await page.evaluate(() => {
+        const clone = document.body.cloneNode(true) as HTMLElement;
+
+        const removeTags = ["script", "style", "noscript", "template"];
+        removeTags.forEach((tag) => {
+          clone.querySelectorAll(tag).forEach((el) => el.remove());
+        });
+
+        const allowedAttrs = new Set(["href", "src", "alt", "title", "aria-label"]);
+        clone.querySelectorAll("*").forEach((el) => {
+          Array.from(el.attributes).forEach((attr) => {
+            if (!allowedAttrs.has(attr.name)) {
+              el.removeAttribute(attr.name);
+            }
+          });
+        });
+
+        const removeComments = (node: Node) => {
+          const childNodes = Array.from(node.childNodes);
+          childNodes.forEach((child) => {
+            if (child.nodeType === Node.COMMENT_NODE) {
+              child.remove();
+              return;
+            }
+            removeComments(child);
+          });
+        };
+
+        removeComments(clone);
+
+        return clone.innerHTML;
+      });
+
+      return cleanedBodyHtml;
     } finally {
       await browser.close();
     }
@@ -116,10 +159,11 @@ You are a technical writer. Given the FULL HTML for a page, produce a documentat
 Return ONLY a JSON object with keys:
 - title: short, human-readable title for the doc
 - summary: one sentence summary
-- content: markdown body capturing the main article/tutorial/reference content. Keep the full page content but ignore navigation menus, headers/footers, cookie banners, popups, and ads. Preserve all code blocks from the page. Include important links as markdown links.
+- content: markdown (not HTML) body capturing the main article/tutorial/reference content. Keep the full page content but ignore navigation menus, headers/footers, cookie banners, popups, and ads. Preserve all code blocks from the page. Include important links as markdown links.
 
 Rules:
 - Maintain headings and code fences where appropriate.
+- Do not output HTML; convert any HTML to markdown before returning.
 - Do not include the original HTML or any extra keys outside the required object.
 - Include the full relevant content; do not truncate sections solely to meet a word limit.
 
@@ -127,14 +171,12 @@ Doc name hint: ${name}
 Source URL: ${url}
 `;
 
-    const trimmedHtml = html.length > 60000 ? `${html.slice(0, 60000)}\n<!-- truncated -->` : html;
-
     const rawResponse = await this.client.chat.send({
-      model: this.model ?? "openai/gpt-4o-mini",
+      model: this.model ?? "google/gemini-2.5-flash",
       responseFormat: { type: "json_object" },
       messages: [
         { role: "system", content: prompt },
-        { role: "user", content: `HTML:\n${trimmedHtml}` },
+        { role: "user", content: `HTML:\n${html}` },
       ],
     });
 

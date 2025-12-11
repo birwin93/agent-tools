@@ -1,4 +1,4 @@
-import type { DocsImportApiClient, DocsPushApiClient, DocsSyncApiClient } from "../src/api-client";
+import type { DocsImportApiClient, DocsPushApiClient, DocsReadApiClient, DocsSyncApiClient } from "../src/api-client";
 import type { CreateDocRequest, DocFrontmatter, DocWithContent } from "../src/generated/api-client";
 
 type CreateDocCall = { body: CreateDocRequest };
@@ -7,7 +7,7 @@ type ImportDocCall = { body: { name: string; url: string } };
 
 type MockResponse<T> = T | (() => T);
 
-export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient, DocsImportApiClient {
+export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient, DocsImportApiClient, DocsReadApiClient {
   listDocsResponse: MockResponse<{ docs: DocFrontmatter[] }> = { docs: [] };
   getDocResponse: MockResponse<DocWithContent> = {
     id: "doc-1",
@@ -36,6 +36,11 @@ export class MockApiClient implements DocsSyncApiClient, DocsPushApiClient, Docs
   getDocById(id: string) {
     const base = typeof this.getDocResponse === "function" ? this.getDocResponse() : this.getDocResponse;
     return Promise.resolve({ ...base, id });
+  }
+
+  getDocBySlug(slug: string) {
+    const base = typeof this.getDocResponse === "function" ? this.getDocResponse() : this.getDocResponse;
+    return Promise.resolve({ ...base, slug });
   }
 
   createDoc(body: CreateDocRequest) {

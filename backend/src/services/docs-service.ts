@@ -26,7 +26,6 @@ export type DocFrontmatter = {
   id: string;
   slug: string;
   title: string;
-  summary: string;
   version: number;
   updatedAt: string;
 };
@@ -70,7 +69,6 @@ export class DocsService {
         id: docs.id,
         slug: docs.slug,
         title: docs.title,
-        summary: docs.summary,
         version: docVersions.version,
         updatedAt: docs.updatedAt,
       })
@@ -82,7 +80,6 @@ export class DocsService {
       id: row.id,
       slug: row.slug,
       title: row.title,
-      summary: row.summary,
       version: row.version,
       updatedAt: toIsoString(row.updatedAt),
     }));

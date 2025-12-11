@@ -4,7 +4,6 @@ export type DocFrontmatter = {
   id: string;
   slug: string;
   title: string;
-  summary: string;
   version: number;
   updatedAt: string;
 };

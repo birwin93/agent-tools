@@ -7,9 +7,16 @@ import {
   type UpdateDocRequest,
 } from "./generated/api-client";
 
-export type DocsSyncApiClient = {
+export type DocsListApiClient = {
   listDocs(): Promise<{ docs: DocFrontmatter[] }>;
+};
+
+export type DocsSyncApiClient = DocsListApiClient & {
   getDocById(id: string): Promise<DocWithContent>;
+};
+
+export type DocsReadApiClient = {
+  getDocBySlug(slug: string): Promise<DocWithContent>;
 };
 
 export type DocsPushApiClient = {
